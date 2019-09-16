@@ -16,9 +16,10 @@ server.get('/', (req, res) => {
 });
 
 server.post('/api/register', (req, res) => {
-  let user = req.body;
+  let { username, password } = req.body;
+  const hash = bcrypt.hashSync(password)
 
-  Users.add(user)
+  Users.add({ username, password: hash })
     .then(saved => {
       res.status(201).json(saved);
     })
@@ -29,7 +30,7 @@ server.post('/api/register', (req, res) => {
 
 server.post('/api/login', (req, res) => {
   let { username, password } = req.body;
-
+  const hash = bcrypt.compareSync(password);
   Users.findBy({ username })
     .first()
     .then(user => {
@@ -50,6 +51,13 @@ server.get('/api/users', (req, res) => {
       res.json(users);
     })
     .catch(err => res.send(err));
+});
+
+server.get('/has', (req, res) => {
+  const name = req.query.name;
+  // hash the name
+  const hash = bcrypt.hashSync(name, 12); // use bcryptjs to hash the name
+  res.send(`the hash for ${name} is ${hash}`);
 });
 
 const port = process.env.PORT || 5000;
